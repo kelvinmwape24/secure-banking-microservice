@@ -4,51 +4,80 @@ import com.banking.microservice.model.Account;
 import com.banking.microservice.model.User;
 import com.banking.microservice.repository.AccountRepository;
 import com.banking.microservice.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class BankingService {
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
-    public BankingService(UserRepository userRepository, AccountRepository accountRepository) {
+    public BankingService(UserRepository userRepository, AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
-    public User registerUser(String username, String rawPassword, String initialAccountNumber, BigDecimal initialDeposit) {
+    public User registerUserWithAccount(String username, String rawPassword, String accountNumber, BigDecimal initialDeposit) {
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new RuntimeException("Username already exists!");
+            throw new RuntimeException("Username already exists");
         }
-        User user = new User(username, passwordEncoder.encode(rawPassword));
-        user = userRepository.save(user);
+        if (accountRepository.findByAccountNumber(accountNumber).isPresent()) {
+            throw new RuntimeException("Account number already exists");
+        }
 
-        Account account = new Account(initialAccountNumber, initialDeposit, user);
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        User savedUser = userRepository.save(user);
+
+        Account account = new Account();
+        account.setAccountNumber(accountNumber);
+        account.setBalance(initialDeposit);
+        account.setUser(savedUser);
         accountRepository.save(account);
 
+        return savedUser;
+    }
+
+    public User authenticateUser(String username, String rawPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
         return user;
     }
 
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAll();
+    }
+
     @Transactional
-    public void transferFunds(String fromAccNumber, String toAccNumber, BigDecimal amount) {
+    public void transferFunds(String fromAccountNum, String toAccountNum, BigDecimal amount) {
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Transfer amount must be greater than zero.");
+            throw new RuntimeException("Transfer amount must be positive");
+        }
+        if (fromAccountNum.equals(toAccountNum)) {
+            throw new RuntimeException("Cannot transfer to the same account");
         }
 
-        Account fromAccount = accountRepository.findByAccountNumberForUpdate(fromAccNumber)
-                .orElseThrow(() -> new RuntimeException("Source account not found: " + fromAccNumber));
+        Account fromAccount = accountRepository.findByAccountNumberWithLock(fromAccountNum)
+                .orElseThrow(() -> new RuntimeException("Source account not found"));
 
-        Account toAccount = accountRepository.findByAccountNumberForUpdate(toAccNumber)
-                .orElseThrow(() -> new RuntimeException("Destination account not found: " + toAccNumber));
+        Account toAccount = accountRepository.findByAccountNumberWithLock(toAccountNum)
+                .orElseThrow(() -> new RuntimeException("Destination account not found"));
 
         if (fromAccount.getBalance().compareTo(amount) < 0) {
-            throw new RuntimeException("Insufficient funds in source account.");
+            throw new RuntimeException("Insufficient funds");
         }
 
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
