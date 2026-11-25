@@ -3,132 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Banking Microservice | Elite Dashboard</title>
+    <title>Secure Banking Portal | Enterprise System</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
-    <div class="max-w-6xl mx-auto px-4 py-10">
-        <!-- Header -->
-        <header class="mb-10 flex flex-col md:flex-row justify-between items-center border-b border-slate-800 pb-6 gap-4">
-            <div>
-                <h1 class="text-3xl font-extrabold tracking-tight text-blue-500">Secure Banking Microservice</h1>
-                <p class="text-slate-400 text-sm">Enterprise Concurrency-Safe Transaction Engine with Pessimistic Locking</p>
-            </div>
-            <div id="authStatus" class="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-sm text-slate-300">
-                Status: <span class="text-amber-400 font-semibold">Not Logged In</span>
-            </div>
-        </header>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- 1. Register User Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <h2 class="text-lg font-bold mb-4 text-blue-400 flex items-center gap-2">
-                    <span>👤</span> Register Account
-                </h2>
-                <form id="registerForm" class="space-y-3">
+    <!-- TOP NAVIGATION BAR -->
+    <nav class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-xl text-white font-bold">🏦</div>
+            <div>
+                <h1 class="text-lg font-bold tracking-tight text-white">SecureBank Microservice</h1>
+                <p class="text-xs text-slate-400">Enterprise Concurrency-Safe Engine</p>
+            </div>
+        </div>
+        <div id="navStatus" class="hidden items-center gap-4">
+            <span id="loggedInUserDisplay" class="text-sm text-slate-300 font-medium"></span>
+            <button onclick="logout()" class="bg-rose-950 border border-rose-800 hover:bg-rose-900 text-rose-300 px-3 py-1.5 rounded-lg text-xs transition-colors">Sign Out</button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow">
+
+        <!-- ================= VIEW 1: AUTHENTICATION PORTAL (LOGIN / REGISTER) ================= -->
+        <div id="authView" class="max-w-md mx-auto">
+            <!-- Tabs -->
+            <div class="flex bg-slate-900 p-1.5 rounded-xl border border-slate-800 mb-6">
+                <button onclick="switchTab('login')" id="tabLoginBtn" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white transition-all">Sign In</button>
+                <button onclick="switchTab('register')" id="tabRegisterBtn" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-white transition-all">Create Account</button>
+            </div>
+
+            <!-- Login Card -->
+            <div id="loginCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+                <h2 class="text-xl font-bold mb-1 text-white">Welcome Back</h2>
+                <p class="text-xs text-slate-400 mb-6">Enter your credentials to access your secure banking vault.</p>
+                
+                <form id="loginForm" class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-300 mb-1">Username</label>
-                        <input type="text" id="regUsername" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. kelvin">
+                        <input type="text" id="loginUsername" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. kelvin">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
-                        <input type="password" id="regPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="••••••••">
+                        <input type="password" id="loginPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-blue-600/20">Secure Sign In</button>
+                </form>
+                <div id="loginResponse" class="mt-4 hidden p-3 rounded-xl text-xs"></div>
+            </div>
+
+            <!-- Register Card -->
+            <div id="registerCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl hidden">
+                <h2 class="text-xl font-bold mb-1 text-white">Open an Account</h2>
+                <p class="text-xs text-slate-400 mb-6">Register your profile and provision an initial ledger account.</p>
+                
+                <form id="registerForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Username</label>
+                        <input type="text" id="regUsername" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="e.g. kelvin">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
+                        <input type="password" id="regPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="••••••••">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-300 mb-1">Account Number</label>
-                        <input type="text" id="regAccount" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="ACC-001">
+                        <input type="text" id="regAccount" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="ACC-001">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-300 mb-1">Initial Deposit ($)</label>
-                        <input type="number" step="0.01" id="regDeposit" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" value="5000.00">
+                        <input type="number" step="0.01" id="regDeposit" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500" value="5000.00">
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm transition-colors">Create Account</button>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-emerald-600/20">Create Secure Account</button>
                 </form>
-                <div id="regResponse" class="mt-3 hidden p-2.5 rounded-lg text-xs"></div>
-            </div>
-
-            <!-- 2. Login Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                <div>
-                    <h2 class="text-lg font-bold mb-4 text-purple-400 flex items-center gap-2">
-                        <span>🔑</span> Secure Login
-                    </h2>
-                    <form id="loginForm" class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Username</label>
-                            <input type="text" id="loginUsername" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500" placeholder="Enter username">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
-                            <input type="password" id="loginPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-purple-500" placeholder="••••••••">
-                        </div>
-                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold py-2 rounded-lg text-sm transition-colors mt-4">Sign In</button>
-                    </form>
-                </div>
-                <div id="loginResponse" class="mt-3 hidden p-2.5 rounded-lg text-xs"></div>
-            </div>
-
-            <!-- 3. Transfer Funds Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
-                <div>
-                    <h2 class="text-lg font-bold mb-4 text-emerald-400 flex items-center gap-2">
-                        <span>💸</span> Fund Transfer
-                    </h2>
-                    <form id="transferForm" class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Source Account</label>
-                            <input type="text" id="fromAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="ACC-001">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Destination Account</label>
-                            <input type="text" id="toAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="ACC-002">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Amount ($)</label>
-                            <input type="number" step="0.01" id="transferAmount" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500" value="500.00">
-                        </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2 rounded-lg text-sm transition-colors mt-4">Execute Transfer</button>
-                    </form>
-                </div>
-                <div id="transferResponse" class="mt-3 hidden p-2.5 rounded-lg text-xs"></div>
+                <div id="regResponse" class="mt-4 hidden p-3 rounded-xl text-xs"></div>
             </div>
         </div>
 
-        <!-- Live Accounts Ledger -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-slate-200">🏦 Active Accounts & Real-Time Balances</h2>
-                <button onclick="loadAccounts()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition-colors">Refresh Ledger</button>
+        <!-- ================= VIEW 2: SECURE DASHBOARD (POST-LOGIN) ================= -->
+        <div id="dashboardView" class="hidden space-y-8">
+            <!-- Welcome Banner -->
+            <div class="bg-gradient-to-r from-blue-900/40 to-slate-900 border border-blue-800/50 rounded-2xl p-6 shadow-xl flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-white mb-1" id="welcomeHeading">Welcome back</h2>
+                    <p class="text-sm text-slate-400">Your session is secured with BCrypt and Pessimistic Row-Level Locking.</p>
+                </div>
+                <div class="bg-blue-600/20 border border-blue-500/30 px-4 py-2 rounded-xl text-blue-400 font-mono text-sm">
+                    Status: Active 🟢
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="text-xs uppercase text-slate-400 border-b border-slate-800">
-                        <tr>
-                            <th class="py-2 px-3">Account Number</th>
-                            <th class="py-2 px-3">Owner</th>
-                            <th class="py-2 px-3 text-right">Available Balance</th>
-                        </tr>
-                    </thead>
-                    <tbody id="accountsTable" class="divide-y divide-slate-800/60 text-slate-300">
-                        <tr><td colspan="3" class="py-4 text-center text-slate-500 text-xs">No accounts registered yet. Create one above!</td></tr>
-                    </tbody>
-                </table>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Fund Transfer Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-lg font-bold mb-4 text-emerald-400 flex items-center gap-2">
+                        <span>💸</span> Execute Secure Transfer
+                    </h3>
+                    <form id="transferForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Source Account Number</label>
+                            <input type="text" id="fromAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="ACC-001">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Destination Account Number</label>
+                            <input type="text" id="toAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="ACC-002">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Transfer Amount ($)</label>
+                            <input type="number" step="0.01" id="transferAmount" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="100.00">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-emerald-600/20">Transfer Funds</button>
+                    </form>
+                    <div id="transferResponse" class="mt-4 hidden p-3 rounded-xl text-xs"></div>
+                </div>
+
+                <!-- Active Accounts Ledger Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-slate-200">🏦 System Ledger</h3>
+                            <button onclick="loadAccounts()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+                        </div>
+                        <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="text-xs uppercase text-slate-400 border-b border-slate-800 sticky top-0 bg-slate-900">
+                                    <tr>
+                                        <th class="py-2 px-3">Account</th>
+                                        <th class="py-2 px-3">Owner</th>
+                                        <th class="py-2 px-3 text-right">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accountsTable" class="divide-y divide-slate-800/60 text-slate-300">
+                                    <tr><td colspan="3" class="py-4 text-center text-slate-500 text-xs">Loading accounts...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-slate-500 text-center">
+                        All transactions are protected by ACID isolation.
+                    </div>
+                </div>
             </div>
         </div>
 
-        <footer class="mt-10 text-center text-xs text-slate-500">
-            Protected by Spring Security, JPA Pessimistic Row-Level Locks, and BCrypt Encryption.
-        </footer>
-    </div>
+    </main>
 
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+        Secure Banking Microservice • Built for Professional Portfolio & System Architecture
+    </footer>
+
+    <!-- JAVASCRIPT CONTROLLER -->
     <script>
+        function switchTab(tab) {
+            const loginCard = document.getElementById('loginCard');
+            const registerCard = document.getElementById('registerCard');
+            const loginBtn = document.getElementById('tabLoginBtn');
+            const regBtn = document.getElementById('tabRegisterBtn');
+
+            if (tab === 'login') {
+                loginCard.classList.remove('hidden');
+                registerCard.classList.add('hidden');
+                loginBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white transition-all";
+                regBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
+            } else {
+                loginCard.classList.add('hidden');
+                registerCard.classList.remove('hidden');
+                regBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white transition-all";
+                loginBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
+            }
+        }
+
+        function showDashboard(username) {
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('dashboardView').classList.remove('hidden');
+            document.getElementById('navStatus').classList.remove('hidden');
+            document.getElementById('navStatus').classList.add('flex');
+            document.getElementById('loggedInUserDisplay').innerText = username;
+            document.getElementById('welcomeHeading').innerText = `Welcome back, ${username}!`;
+            loadAccounts();
+        }
+
+        function logout() {
+            document.getElementById('dashboardView').classList.add('hidden');
+            document.getElementById('authView').classList.remove('hidden');
+            document.getElementById('navStatus').classList.add('hidden');
+            document.getElementById('navStatus').classList.remove('flex');
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginResponse').classList.add('hidden');
+        }
+
         async function loadAccounts() {
             try {
                 const res = await fetch('/api/v1/banking/accounts');
                 const accounts = await res.json();
                 const tbody = document.getElementById('accountsTable');
-                if (accounts.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-500 text-xs">No accounts registered yet. Create one above!</td></tr>';
+                if (!accounts || accounts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-500 text-xs">No accounts registered yet.</td></tr>';
                     return;
                 }
                 tbody.innerHTML = accounts.map(acc => `
@@ -141,12 +213,12 @@
             } catch (e) { console.error(e); }
         }
 
-        // Register
+        // Register Handler
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const resBox = document.getElementById('regResponse');
-            resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-slate-800 text-slate-300 block";
-            resBox.innerText = "Registering user...";
+            resBox.className = "mt-4 p-3 rounded-xl text-xs bg-slate-800 text-slate-300 block";
+            resBox.innerText = "Processing registration...";
 
             const payload = {
                 username: document.getElementById('regUsername').value,
@@ -163,22 +235,22 @@
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
-                    resBox.innerText = `Success! Registered ID: ${data.userId}`;
-                    loadAccounts();
+                    resBox.className = "mt-4 p-3 rounded-xl text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
+                    resBox.innerText = `Success! Account created. You can now sign in.`;
+                    setTimeout(() => switchTab('login'), 1500);
                 } else { throw new Error(data.message || 'Registration failed'); }
             } catch (err) {
-                resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
+                resBox.className = "mt-4 p-3 rounded-xl text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
                 resBox.innerText = `Error: ${err.message}`;
             }
         });
 
-        // Login
+        // Login Handler
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const resBox = document.getElementById('loginResponse');
-            resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-slate-800 text-slate-300 block";
-            resBox.innerText = "Authenticating...";
+            resBox.className = "mt-4 p-3 rounded-xl text-xs bg-slate-800 text-slate-300 block";
+            resBox.innerText = "Authenticating credentials...";
 
             const payload = {
                 username: document.getElementById('loginUsername').value,
@@ -193,22 +265,22 @@
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
-                    resBox.innerText = `Welcome back, ${data.username}!`;
-                    document.getElementById('authStatus').innerHTML = `Status: <span class="text-emerald-400 font-semibold">Logged in as ${data.username}</span>`;
-                } else { throw new Error(data.message || 'Login failed'); }
+                    resBox.className = "mt-4 p-3 rounded-xl text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
+                    resBox.innerText = `Authentication successful! Loading dashboard...`;
+                    setTimeout(() => showDashboard(data.username), 800);
+                } else { throw new Error(data.message || 'Invalid credentials'); }
             } catch (err) {
-                resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
+                resBox.className = "mt-4 p-3 rounded-xl text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
                 resBox.innerText = `Error: ${err.message}`;
             }
         });
 
-        // Transfer
+        // Transfer Handler
         document.getElementById('transferForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const resBox = document.getElementById('transferResponse');
-            resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-slate-800 text-slate-300 block";
-            resBox.innerText = "Executing transfer...";
+            resBox.className = "mt-4 p-3 rounded-xl text-xs bg-slate-800 text-slate-300 block";
+            resBox.innerText = "Executing concurrency-safe transfer...";
 
             const payload = {
                 fromAccount: document.getElementById('fromAcc').value,
@@ -224,18 +296,15 @@
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
+                    resBox.className = "mt-4 p-3 rounded-xl text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
                     resBox.innerText = `Success! ${data.message}`;
                     loadAccounts();
                 } else { throw new Error(data.message || 'Transfer failed'); }
             } catch (err) {
-                resBox.className = "mt-3 p-2.5 rounded-lg text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
+                resBox.className = "mt-4 p-3 rounded-xl text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
                 resBox.innerText = `Error: ${err.message}`;
             }
         });
-
-        // Load accounts on page load
-        loadAccounts();
     </script>
 </body>
 </html>
