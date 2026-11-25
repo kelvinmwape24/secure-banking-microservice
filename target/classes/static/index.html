@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Banking Microservice | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+    <div class="max-w-4xl mx-auto px-4 py-10">
+        <!-- Header -->
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-extrabold tracking-tight text-blue-500 mb-2">Secure Banking Microservice</h1>
+            <p class="text-slate-400">Enterprise Concurrency-Safe Transaction Engine with Pessimistic Locking</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Register User Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-xl font-bold mb-4 text-blue-400 flex items-center gap-2">
+                    <span>👤</span> Register User & Account
+                </h2>
+                <form id="registerForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Username</label>
+                        <input type="text" id="regUsername" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="e.g. kelvin">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Password</label>
+                        <input type="password" id="regPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Account Number</label>
+                        <input type="text" id="regAccount" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="e.g. ACC-001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Initial Deposit ($)</label>
+                        <input type="number" step="0.01" id="regDeposit" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" placeholder="5000.00">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-lg transition-colors">Create Account</button>
+                </form>
+                <div id="regResponse" class="mt-4 hidden p-3 rounded-lg text-sm"></div>
+            </div>
+
+            <!-- Transfer Funds Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-xl font-bold mb-4 text-emerald-400 flex items-center gap-2">
+                    <span>💸</span> Secure Fund Transfer
+                </h2>
+                <form id="transferForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Source Account</label>
+                        <input type="text" id="fromAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. ACC-001">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Destination Account</label>
+                        <input type="text" id="toAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. ACC-002">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">Transfer Amount ($)</label>
+                        <input type="number" step="0.01" id="transferAmount" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="1500.00">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg transition-colors mt-8">Execute Transfer</button>
+                </form>
+                <div id="transferResponse" class="mt-4 hidden p-3 rounded-lg text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Footer Info -->
+        <footer class="mt-12 text-center text-xs text-slate-500">
+            Protected by Spring Security, JPA Pessimistic Row-Level Locks, and BCrypt Encryption.
+        </footer>
+    </div>
+
+    <script>
+        // Handle User Registration
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resBox = document.getElementById('regResponse');
+            resBox.className = "mt-4 p-3 rounded-lg text-sm bg-slate-800 text-slate-300 block";
+            resBox.innerText = "Processing registration...";
+
+            const payload = {
+                username: document.getElementById('regUsername').value,
+                password: document.getElementById('regPassword').value,
+                accountNumber: document.getElementById('regAccount').value,
+                initialDeposit: parseFloat(document.getElementById('regDeposit').value)
+            };
+
+            try {
+                const response = await fetch('/api/v1/banking/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    resBox.className = "mt-4 p-3 rounded-lg text-sm bg-emerald-950 border border-emerald-800 text-emerald-300 block";
+                    resBox.innerText = `Success! User registered with ID: ${data.userId}`;
+                } else {
+                    throw new Error(data.message || 'Registration failed');
+                }
+            } catch (err) {
+                resBox.className = "mt-4 p-3 rounded-lg text-sm bg-rose-950 border border-rose-800 text-rose-300 block";
+                resBox.innerText = `Error: ${err.message}`;
+            }
+        });
+
+        // Handle Fund Transfer
+        document.getElementById('transferForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resBox = document.getElementById('transferResponse');
+            resBox.className = "mt-4 p-3 rounded-lg text-sm bg-slate-800 text-slate-300 block";
+            resBox.innerText = "Executing concurrent transaction...";
+
+            const payload = {
+                fromAccount: document.getElementById('fromAcc').value,
+                toAccount: document.getElementById('toAcc').value,
+                amount: parseFloat(document.getElementById('transferAmount').value)
+            };
+
+            try {
+                const response = await fetch('/api/v1/banking/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    resBox.className = "mt-4 p-3 rounded-lg text-sm bg-emerald-950 border border-emerald-800 text-emerald-300 block";
+                    resBox.innerText = `Success! ${data.message}`;
+                } else {
+                    throw new Error(data.message || 'Transfer failed');
+                }
+            } catch (err) {
+                resBox.className = "mt-4 p-3 rounded-lg text-sm bg-rose-950 border border-rose-800 text-rose-300 block";
+                resBox.innerText = `Error: ${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
