@@ -55,9 +55,9 @@ public class BankingController {
     }
 
     @GetMapping("/accounts")
-    public ResponseEntity<List>> getAccounts() {
+    public ResponseEntity<List> getAccounts() {
         List<Account> allAccounts = bankingService.getAllAccounts();
-        List> responseList = allAccounts.stream().map(acc -> {
+        List responseList = allAccounts.stream().map(acc -> {
             Map<String, Object> map = new HashMap<>();
             map.put("accountNumber", acc.getAccountNumber());
             map.put("balance", acc.getBalance());
