@@ -1,8 +1,10 @@
 package com.banking.microservice.service;
 
 import com.banking.microservice.model.Account;
+import com.banking.microservice.model.TransactionRecord;
 import com.banking.microservice.model.User;
 import com.banking.microservice.repository.AccountRepository;
+import com.banking.microservice.repository.TransactionRepository;
 import com.banking.microservice.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,17 +12,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class BankingService {
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public BankingService(UserRepository userRepository, AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
+    public BankingService(UserRepository userRepository, AccountRepository accountRepository, TransactionRepository transactionRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -31,6 +36,9 @@ public class BankingService {
         }
         if (accountRepository.findByAccountNumber(accountNumber).isPresent()) {
             throw new RuntimeException("Account number already exists");
+        }
+        if (initialDeposit.compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Initial deposit cannot be negative");
         }
 
         User user = new User();
@@ -61,13 +69,19 @@ public class BankingService {
         return accountRepository.findAll();
     }
 
+    public List<TransactionRecord> getAllTransactions() {
+        return transactionRepository.findAllByOrderByTimestampDesc();
+    }
+
     @Transactional
-    public void transferFunds(String fromAccountNum, String toAccountNum, BigDecimal amount) {
+    public String transferFunds(String fromAccountNum, String toAccountNum, BigDecimal amount) {
+        String txId = "TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Transfer amount must be positive");
         }
         if (fromAccountNum.equals(toAccountNum)) {
-            throw new RuntimeException("Cannot transfer to the same account");
+            throw new RuntimeException("Cannot transfer funds to the same account");
         }
 
         Account fromAccount = accountRepository.findByAccountNumberWithLock(fromAccountNum)
@@ -77,7 +91,8 @@ public class BankingService {
                 .orElseThrow(() -> new RuntimeException("Destination account not found"));
 
         if (fromAccount.getBalance().compareTo(amount) < 0) {
-            throw new RuntimeException("Insufficient funds");
+            transactionRepository.save(new TransactionRecord(txId, fromAccountNum, toAccountNum, amount, "FAILED_INSUFFICIENT_FUNDS"));
+            throw new RuntimeException("Insufficient funds in source account");
         }
 
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
@@ -85,5 +100,8 @@ public class BankingService {
 
         accountRepository.save(fromAccount);
         accountRepository.save(toAccount);
+
+        transactionRepository.save(new TransactionRecord(txId, fromAccountNum, toAccountNum, amount, "SUCCESS"));
+        return txId;
     }
 }

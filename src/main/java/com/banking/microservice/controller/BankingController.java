@@ -1,6 +1,7 @@
 package com.banking.microservice.controller;
 
 import com.banking.microservice.model.Account;
+import com.banking.microservice.model.TransactionRecord;
 import com.banking.microservice.model.User;
 import com.banking.microservice.service.BankingService;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +68,11 @@ public class BankingController {
         return ResponseEntity.ok(responseList);
     }
 
+    @GetMapping("/transactions")
+    public ResponseEntity<List<TransactionRecord>> getTransactions() {
+        return ResponseEntity.ok(bankingService.getAllTransactions());
+    }
+
     @PostMapping("/transfer")
     public ResponseEntity<?> transfer(@RequestBody Map<String, Object> payload) {
         try {
@@ -74,8 +80,8 @@ public class BankingController {
             String toAccount = (String) payload.get("toAccount");
             BigDecimal amount = new BigDecimal(payload.get("amount").toString());
 
-            bankingService.transferFunds(fromAccount, toAccount, amount);
-            return ResponseEntity.ok(Map.of("message", "Transferred $" + amount + " from " + fromAccount + " to " + toAccount));
+            String txId = bankingService.transferFunds(fromAccount, toAccount, amount);
+            return ResponseEntity.ok(Map.of("message", "Transfer successful", "transactionId", txId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

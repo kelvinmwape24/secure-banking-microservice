@@ -3,41 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Banking Portal | Enterprise System</title>
+    <title>SecureBank Enterprise | Distributed Core Banking</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
 
-    <!-- TOP NAVIGATION BAR -->
-    <nav class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex justify-between items-center">
+    <!-- TOP NAV -->
+    <nav class="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <div class="bg-blue-600 p-2 rounded-xl text-white font-bold">🏦</div>
+            <div class="bg-gradient-to-tr from-blue-600 to-indigo-600 p-2.5 rounded-xl text-white font-bold shadow-lg">🏦</div>
             <div>
-                <h1 class="text-lg font-bold tracking-tight text-white">SecureBank Microservice</h1>
-                <p class="text-xs text-slate-400">Enterprise Concurrency-Safe Engine</p>
+                <h1 class="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
+                    SecureBank Enterprise 
+                    <span class="text-[10px] bg-blue-950 border border-blue-800 text-blue-400 px-2 py-0.5 rounded-full">v2.5 PhD Core</span>
+                </h1>
+                <p class="text-xs text-slate-400">Pessimistic Locking & ACID Distributed Ledger</p>
             </div>
         </div>
-        <div id="navStatus" class="hidden items-center gap-4">
-            <span id="loggedInUserDisplay" class="text-sm text-slate-300 font-medium"></span>
-            <button onclick="logout()" class="bg-rose-950 border border-rose-800 hover:bg-rose-900 text-rose-300 px-3 py-1.5 rounded-lg text-xs transition-colors">Sign Out</button>
+        <div class="flex items-center gap-4">
+            <!-- View Mode Switcher -->
+            <div class="hidden md:flex bg-slate-950 border border-slate-800 p-1 rounded-xl">
+                <button onclick="setViewMode('web')" id="webModeBtn" class="px-3 py-1 text-xs font-semibold rounded-lg bg-blue-600 text-white transition-all">🖥️ Web App</button>
+                <button onclick="setViewMode('mobile')" id="mobileModeBtn" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">📱 Mobile App</button>
+            </div>
+            <div id="navStatus" class="hidden items-center gap-3">
+                <span id="loggedInUserDisplay" class="text-sm text-slate-300 font-medium"></span>
+                <button onclick="logout()" class="bg-rose-950 border border-rose-800 hover:bg-rose-900 text-rose-300 px-3 py-1.5 rounded-lg text-xs transition-colors">Sign Out</button>
+            </div>
         </div>
     </nav>
 
-    <!-- MAIN CONTAINER -->
-    <main class="max-w-4xl mx-auto px-4 py-10 w-full flex-grow">
+    <!-- WRAPPER CONTAINER (Supports Mobile Device Simulator Frame) -->
+    <main id="appContainer" class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow flex flex-col justify-center transition-all duration-300">
 
-        <!-- ================= VIEW 1: AUTHENTICATION PORTAL (LOGIN / REGISTER) ================= -->
-        <div id="authView" class="max-w-md mx-auto">
-            <!-- Tabs -->
+        <!-- ================= AUTH VIEW ================= -->
+        <div id="authView" class="max-w-md mx-auto w-full">
             <div class="flex bg-slate-900 p-1.5 rounded-xl border border-slate-800 mb-6">
                 <button onclick="switchTab('login')" id="tabLoginBtn" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-blue-600 text-white transition-all">Sign In</button>
-                <button onclick="switchTab('register')" id="tabRegisterBtn" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-white transition-all">Create Account</button>
+                <button onclick="switchTab('register')" id="tabRegisterBtn" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-white transition-all">Register Account</button>
             </div>
 
             <!-- Login Card -->
             <div id="loginCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
-                <h2 class="text-xl font-bold mb-1 text-white">Welcome Back</h2>
-                <p class="text-xs text-slate-400 mb-6">Enter your credentials to access your secure banking vault.</p>
+                <h2 class="text-xl font-bold mb-1 text-white">Client Portal Sign In</h2>
+                <p class="text-xs text-slate-400 mb-6">Authenticate via BCrypt security protocol.</p>
                 
                 <form id="loginForm" class="space-y-4">
                     <div>
@@ -48,15 +57,15 @@
                         <label class="block text-xs font-medium text-slate-300 mb-1">Password</label>
                         <input type="password" id="loginPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500" placeholder="••••••••">
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-blue-600/20">Secure Sign In</button>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-blue-600/20">Sign In to Vault</button>
                 </form>
                 <div id="loginResponse" class="mt-4 hidden p-3 rounded-xl text-xs"></div>
             </div>
 
             <!-- Register Card -->
             <div id="registerCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl hidden">
-                <h2 class="text-xl font-bold mb-1 text-white">Open an Account</h2>
-                <p class="text-xs text-slate-400 mb-6">Register your profile and provision an initial ledger account.</p>
+                <h2 class="text-xl font-bold mb-1 text-white">Open Enterprise Account</h2>
+                <p class="text-xs text-slate-400 mb-6">Initialize user profile and ledger account.</p>
                 
                 <form id="registerForm" class="space-y-4">
                     <div>
@@ -75,74 +84,94 @@
                         <label class="block text-xs font-medium text-slate-300 mb-1">Initial Deposit ($)</label>
                         <input type="number" step="0.01" id="regDeposit" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-blue-500" value="5000.00">
                     </div>
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-emerald-600/20">Create Secure Account</button>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-emerald-600/20">Register & Provision</button>
                 </form>
                 <div id="regResponse" class="mt-4 hidden p-3 rounded-xl text-xs"></div>
             </div>
         </div>
 
-        <!-- ================= VIEW 2: SECURE DASHBOARD (POST-LOGIN) ================= -->
-        <div id="dashboardView" class="hidden space-y-8">
-            <!-- Welcome Banner -->
-            <div class="bg-gradient-to-r from-blue-900/40 to-slate-900 border border-blue-800/50 rounded-2xl p-6 shadow-xl flex justify-between items-center">
+        <!-- ================= DASHBOARD VIEW ================= -->
+        <div id="dashboardView" class="hidden space-y-6 w-full">
+            <div class="bg-gradient-to-r from-blue-950/60 to-slate-900 border border-blue-800/40 rounded-2xl p-6 shadow-xl flex justify-between items-center">
                 <div>
-                    <h2 class="text-2xl font-extrabold text-white mb-1" id="welcomeHeading">Welcome back</h2>
-                    <p class="text-sm text-slate-400">Your session is secured with BCrypt and Pessimistic Row-Level Locking.</p>
+                    <h2 class="text-xl font-extrabold text-white mb-1" id="welcomeHeading">Welcome back</h2>
+                    <p class="text-xs text-slate-400">Concurrency-Safe Engine with Pessimistic Row Locking Enabled.</p>
                 </div>
-                <div class="bg-blue-600/20 border border-blue-500/30 px-4 py-2 rounded-xl text-blue-400 font-mono text-sm">
-                    Status: Active 🟢
+                <div class="bg-emerald-950 border border-emerald-800 px-3 py-1.5 rounded-xl text-emerald-400 text-xs font-semibold">
+                    System Secure 🟢
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Fund Transfer Card -->
+                <!-- Transfer Card -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-                    <h3 class="text-lg font-bold mb-4 text-emerald-400 flex items-center gap-2">
+                    <h3 class="text-base font-bold mb-3 text-emerald-400 flex items-center gap-2">
                         <span>💸</span> Execute Secure Transfer
                     </h3>
-                    <form id="transferForm" class="space-y-4">
+                    <form id="transferForm" class="space-y-3">
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Source Account Number</label>
-                            <input type="text" id="fromAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="ACC-001">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Source Account</label>
+                            <input type="text" id="fromAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="ACC-001">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Destination Account Number</label>
-                            <input type="text" id="toAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="ACC-002">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Destination Account</label>
+                            <input type="text" id="toAcc" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="ACC-002">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Transfer Amount ($)</label>
-                            <input type="number" step="0.01" id="transferAmount" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="100.00">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Amount ($)</label>
+                            <input type="number" step="0.01" id="transferAmount" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500" placeholder="100.00">
                         </div>
                         <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors shadow-lg shadow-emerald-600/20">Transfer Funds</button>
                     </form>
-                    <div id="transferResponse" class="mt-4 hidden p-3 rounded-xl text-xs"></div>
+                    <div id="transferResponse" class="mt-3 hidden p-3 rounded-xl text-xs"></div>
                 </div>
 
-                <!-- Active Accounts Ledger Card -->
+                <!-- Account Balances Ledger -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
                     <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-bold text-slate-200">🏦 System Ledger</h3>
-                            <button onclick="loadAccounts()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition-colors">Refresh</button>
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-base font-bold text-slate-200">🏦 Active Accounts Ledger</h3>
+                            <button onclick="refreshData()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg transition-colors">Refresh</button>
                         </div>
-                        <div class="overflow-x-auto max-h-64 overflow-y-auto">
-                            <table class="w-full text-left text-sm">
-                                <thead class="text-xs uppercase text-slate-400 border-b border-slate-800 sticky top-0 bg-slate-900">
+                        <div class="overflow-x-auto max-h-52 overflow-y-auto">
+                            <table class="w-full text-left text-xs">
+                                <thead class="uppercase text-slate-400 border-b border-slate-800 sticky top-0 bg-slate-900">
                                     <tr>
-                                        <th class="py-2 px-3">Account</th>
-                                        <th class="py-2 px-3">Owner</th>
-                                        <th class="py-2 px-3 text-right">Balance</th>
+                                        <th class="py-2 px-2">Account</th>
+                                        <th class="py-2 px-2">Owner</th>
+                                        <th class="py-2 px-2 text-right">Balance</th>
                                     </tr>
                                 </thead>
                                 <tbody id="accountsTable" class="divide-y divide-slate-800/60 text-slate-300">
-                                    <tr><td colspan="3" class="py-4 text-center text-slate-500 text-xs">Loading accounts...</td></tr>
+                                    <tr><td colspan="3" class="py-3 text-center text-slate-500">Loading accounts...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 text-center">
-                        All transactions are protected by ACID isolation.
-                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Audit Log Feed -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-base font-bold text-slate-200">📋 Immutable Transaction Audit Trail</h3>
+                    <span class="text-[10px] text-slate-400 font-mono">Real-Time ACID Log</span>
+                </div>
+                <div class="overflow-x-auto max-h-48 overflow-y-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="uppercase text-slate-400 border-b border-slate-800 sticky top-0 bg-slate-900">
+                            <tr>
+                                <th class="py-2 px-2">Tx ID</th>
+                                <th class="py-2 px-2">From</th>
+                                <th class="py-2 px-2">To</th>
+                                <th class="py-2 px-2 text-right">Amount</th>
+                                <th class="py-2 px-2 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable" class="divide-y divide-slate-800/60 text-slate-300 font-mono">
+                            <tr><td colspan="5" class="py-3 text-center text-slate-500 font-sans">No transactions recorded yet.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -150,12 +179,39 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
-        Secure Banking Microservice • Built for Professional Portfolio & System Architecture
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+        SecureBank Microservice • Distributed Systems Architecture & Mobile/Web Runtime
     </footer>
 
-    <!-- JAVASCRIPT CONTROLLER -->
+    <!-- SCRIPT LOGIC -->
     <script>
+        function setViewMode(mode) {
+            const container = document.getElementById('appContainer');
+            const webBtn = document.getElementById('webModeBtn');
+            const mobileBtn = document.getElementById('mobileModeBtn');
+
+            if (mode === 'mobile') {
+                container.classList.remove('max-w-6xl');
+                container.classList.add('max-w-sm');
+                container.style.border = "8px solid #334155";
+                container.style.borderRadius = "36px";
+                container.style.margin = "20px auto";
+                container.style.background = "#020617";
+                container.style.boxShadow = "0 25px 50px -12px rgba(0, 0, 0, 0.7)";
+                mobileBtn.className = "px-3 py-1 text-xs font-semibold rounded-lg bg-blue-600 text-white transition-all";
+                webBtn.className = "px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
+            } else {
+                container.classList.add('max-w-6xl');
+                container.classList.remove('max-w-sm');
+                container.style.border = "none";
+                container.style.borderRadius = "0";
+                container.style.margin = "0 auto";
+                container.style.boxShadow = "none";
+                webBtn.className = "px-3 py-1 text-xs font-semibold rounded-lg bg-blue-600 text-white transition-all";
+                mobileBtn.className = "px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all";
+            }
+        }
+
         function switchTab(tab) {
             const loginCard = document.getElementById('loginCard');
             const registerCard = document.getElementById('registerCard');
@@ -182,7 +238,7 @@
             document.getElementById('navStatus').classList.add('flex');
             document.getElementById('loggedInUserDisplay').innerText = username;
             document.getElementById('welcomeHeading').innerText = `Welcome back, ${username}!`;
-            loadAccounts();
+            refreshData();
         }
 
         function logout() {
@@ -194,20 +250,46 @@
             document.getElementById('loginResponse').classList.add('hidden');
         }
 
+        async function refreshData() {
+            loadAccounts();
+            loadTransactions();
+        }
+
         async function loadAccounts() {
             try {
                 const res = await fetch('/api/v1/banking/accounts');
                 const accounts = await res.json();
                 const tbody = document.getElementById('accountsTable');
                 if (!accounts || accounts.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-500 text-xs">No accounts registered yet.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" class="py-3 text-center text-slate-500">No accounts registered.</td></tr>';
                     return;
                 }
                 tbody.innerHTML = accounts.map(acc => `
                     <tr class="hover:bg-slate-800/40">
-                        <td class="py-2.5 px-3 font-mono text-blue-400">${acc.accountNumber}</td>
-                        <td class="py-2.5 px-3">${acc.owner}</td>
-                        <td class="py-2.5 px-3 text-right font-semibold text-emerald-400">$${parseFloat(acc.balance).toFixed(2)}</td>
+                        <td class="py-2 px-2 font-mono text-blue-400">${acc.accountNumber}</td>
+                        <td class="py-2 px-2">${acc.owner}</td>
+                        <td class="py-2 px-2 text-right font-semibold text-emerald-400">$${parseFloat(acc.balance).toFixed(2)}</td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadTransactions() {
+            try {
+                const res = await fetch('/api/v1/banking/transactions');
+                const txs = await res.json();
+                const tbody = document.getElementById('transactionsTable');
+                if (!txs || txs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="py-3 text-center text-slate-500 font-sans">No transactions recorded yet.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = txs.map(tx => `
+                    <tr class="hover:bg-slate-800/40">
+                        <td class="py-2 px-2 text-blue-400">${tx.transactionId}</td>
+                        <td class="py-2 px-2">${tx.sourceAccount}</td>
+                        <td class="py-2 px-2">${tx.destinationAccount}</td>
+                        <td class="py-2 px-2 text-right text-emerald-400">$${parseFloat(tx.amount).toFixed(2)}</td>
+                        <td class="py-2 px-2 text-center"><span class="px-2 py-0.5 rounded text-[10px] ${tx.status === 'SUCCESS' ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-rose-950 text-rose-300 border border-rose-800'}">${tx.status}</span></td>
                     </tr>
                 `).join('');
             } catch (e) { console.error(e); }
@@ -218,7 +300,7 @@
             e.preventDefault();
             const resBox = document.getElementById('regResponse');
             resBox.className = "mt-4 p-3 rounded-xl text-xs bg-slate-800 text-slate-300 block";
-            resBox.innerText = "Processing registration...";
+            resBox.innerText = "Provisioning account...";
 
             const payload = {
                 username: document.getElementById('regUsername').value,
@@ -236,8 +318,8 @@
                 const data = await response.json();
                 if (response.ok) {
                     resBox.className = "mt-4 p-3 rounded-xl text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
-                    resBox.innerText = `Success! Account created. You can now sign in.`;
-                    setTimeout(() => switchTab('login'), 1500);
+                    resBox.innerText = `Success! Account created. Sign in now.`;
+                    setTimeout(() => switchTab('login'), 1200);
                 } else { throw new Error(data.message || 'Registration failed'); }
             } catch (err) {
                 resBox.className = "mt-4 p-3 rounded-xl text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
@@ -250,7 +332,7 @@
             e.preventDefault();
             const resBox = document.getElementById('loginResponse');
             resBox.className = "mt-4 p-3 rounded-xl text-xs bg-slate-800 text-slate-300 block";
-            resBox.innerText = "Authenticating credentials...";
+            resBox.innerText = "Authenticating...";
 
             const payload = {
                 username: document.getElementById('loginUsername').value,
@@ -266,8 +348,8 @@
                 const data = await response.json();
                 if (response.ok) {
                     resBox.className = "mt-4 p-3 rounded-xl text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
-                    resBox.innerText = `Authentication successful! Loading dashboard...`;
-                    setTimeout(() => showDashboard(data.username), 800);
+                    resBox.innerText = `Authenticated! Loading core...`;
+                    setTimeout(() => showDashboard(data.username), 600);
                 } else { throw new Error(data.message || 'Invalid credentials'); }
             } catch (err) {
                 resBox.className = "mt-4 p-3 rounded-xl text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
@@ -279,8 +361,8 @@
         document.getElementById('transferForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const resBox = document.getElementById('transferResponse');
-            resBox.className = "mt-4 p-3 rounded-xl text-xs bg-slate-800 text-slate-300 block";
-            resBox.innerText = "Executing concurrency-safe transfer...";
+            resBox.className = "mt-3 p-3 rounded-xl text-xs bg-slate-800 text-slate-300 block";
+            resBox.innerText = "Executing ACID transfer with row lock...";
 
             const payload = {
                 fromAccount: document.getElementById('fromAcc').value,
@@ -296,12 +378,12 @@
                 });
                 const data = await response.json();
                 if (response.ok) {
-                    resBox.className = "mt-4 p-3 rounded-xl text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
-                    resBox.innerText = `Success! ${data.message}`;
-                    loadAccounts();
+                    resBox.className = "mt-3 p-3 rounded-xl text-xs bg-emerald-950 border border-emerald-800 text-emerald-300 block";
+                    resBox.innerText = `Success! TxID: ${data.transactionId}`;
+                    refreshData();
                 } else { throw new Error(data.message || 'Transfer failed'); }
             } catch (err) {
-                resBox.className = "mt-4 p-3 rounded-xl text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
+                resBox.className = "mt-3 p-3 rounded-xl text-xs bg-rose-950 border border-rose-800 text-rose-300 block";
                 resBox.innerText = `Error: ${err.message}`;
             }
         });
