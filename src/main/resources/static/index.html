@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecureBank Enterprise | Distributed Core Banking</title>
+    <title>SecureBank Enterprise | Core Banking</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
@@ -15,7 +15,7 @@
             <div>
                 <h1 class="text-base font-extrabold tracking-tight text-white flex items-center gap-2">
                     SecureBank Enterprise 
-                    <span class="text-[10px] bg-blue-950 border border-blue-800 text-blue-400 px-2 py-0.5 rounded-full">v2.5 PhD Core</span>
+                    <span class="text-[10px] bg-blue-950 border border-blue-800 text-blue-400 px-2 py-0.5 rounded-full">v2.5 Core</span>
                 </h1>
                 <p class="text-xs text-slate-400">Pessimistic Locking & ACID Distributed Ledger</p>
             </div>
@@ -24,7 +24,7 @@
             <!-- View Mode Switcher -->
             <div class="hidden md:flex bg-slate-950 border border-slate-800 p-1 rounded-xl">
                 <button onclick="setViewMode('web')" id="webModeBtn" class="px-3 py-1 text-xs font-semibold rounded-lg bg-blue-600 text-white transition-all">🖥️ Web App</button>
-                <button onclick="setViewMode('mobile')" id="mobileModeBtn" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">📱 Mobile App</button>
+                <button onclick="setViewMode('mobile')" id="mobileModeBtn" class="px-3 py-1 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition-all">📱 Mobile View</button>
             </div>
             <div id="navStatus" class="hidden items-center gap-3">
                 <span id="loggedInUserDisplay" class="text-sm text-slate-300 font-medium"></span>
@@ -33,7 +33,7 @@
         </div>
     </nav>
 
-    <!-- WRAPPER CONTAINER (Supports Mobile Device Simulator Frame) -->
+    <!-- WRAPPER CONTAINER -->
     <main id="appContainer" class="max-w-6xl mx-auto px-4 py-8 w-full flex-grow flex flex-col justify-center transition-all duration-300">
 
         <!-- ================= AUTH VIEW ================= -->
@@ -180,7 +180,7 @@
 
     <!-- FOOTER -->
     <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-        SecureBank Microservice • Distributed Systems Architecture & Mobile/Web Runtime
+        SecureBank Enterprise • Distributed Systems Architecture & Mobile/Web Runtime
     </footer>
 
     <!-- SCRIPT LOGIC -->
